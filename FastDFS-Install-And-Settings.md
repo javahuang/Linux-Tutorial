@@ -10,44 +10,52 @@
 
 ## 为什么会出现
 
-
-
 ## 哪些人喜欢它
-
 
 ## 哪些人不喜欢它
 
-
-
 ## 为什么学习它
 
-
-
-
 ## 同类工具
-
-
 
 ### 单机安装部署（CentOS 6.7 环境）
 
 - 环境准备：
     - 已经安装好 Nginx
 - 软件准备：
-    - **FastDFS_v5.05.tar.gz**
+    - **FastDFS_v5.10.tar.gz**
+    
+        ``` 
+        mkdir -p /opt/setups/FastDFS
+        curl https://codeload.github.com/happyfish100/fastdfs/tar.gz/V5.10 -o FastDFS_v5.10.tar.gz
+        ```
     - **fastdfs-nginx-module_v1.16.tar.gz**
-    - **libfastcommon-1.0.7.tar.gz**
+  
+        ```
+        git clone https://github.com/happyfish100/fastdfs-nginx-module.git
+        ```
+    - **libfastcommon-1.0.35.tar.gz**
+
+        ```
+        curl https://codeload.github.com/happyfish100/libfastcommon/tar.gz/V1.0.35 -o libfastcommon-1.0.35.tar.gz
+        ```
+    - **nginx-1.10.1.tar.gz**
+        
+        ```
+        curl http://nginx.org/download/nginx-1.10.1.tar.gz?_ga=2.64500973.375223770.1494399861-971681919.1494170724 -o nginx-1.10.1.tar.gz
+        ```
 - 安装依赖包：`yum install -y libevent`
-- 安装 **libfastcommon-1.0.7.tar.gz**
-    - 解压：`tar zxvf libfastcommon-1.0.7.tar.gz`
-    - 进入解压后目录：`cd libfastcommon-1.0.7/`
+- 安装 **libfastcommon-1.0.35.tar.gz**
+    - 解压：`tar zxvf libfastcommon-1.0.35.tar.gz`
+    - 进入解压后目录：`cd libfastcommon-1.0.35/`
     - 编译：`./make.sh`
     - 安装：`./make.sh install`
     - 设置几个软链接：`ln -s /usr/lib64/libfastcommon.so /usr/local/lib/libfastcommon.so`  
     - 设置几个软链接：`ln -s /usr/lib64/libfastcommon.so /usr/lib/libfastcommon.so`  
     - 设置几个软链接：`ln -s /usr/lib64/libfdfsclient.so /usr/local/lib/libfdfsclient.so`  
     - 设置几个软链接：`ln -s /usr/lib64/libfdfsclient.so /usr/lib/libfdfsclient.so` 
-- 安装 tracker （跟踪器）服务 **FastDFS_v5.08.tar.gz**
-    - 解压：`tar zxvf FastDFS_v5.05.tar.gz`
+- 安装 tracker （跟踪器）服务 **FastDFS_v5.10.tar.gz**
+    - 解压：`tar zxvf FastDFS_v5.10.tar.gz`
     - 进入解压后目录：`cd FastDFS/`
     - 编译：`./make.sh`
     - 安装：`./make.sh install`
@@ -59,6 +67,7 @@
 - 配置 tracker 服务
     - 复制一份配置文件：`cp /etc/fdfs/tracker.conf.sample /etc/fdfs/tracker.conf`
     - 编辑：`vim /etc/fdfs/tracker.conf`，编辑内容看下面中文注释
+    
     ``` ini
     disabled=false
     bind_addr=
@@ -121,6 +130,7 @@
     - 如果 storage 单独安装的话，那上面安装的步骤都要在走一遍，只是到了编辑配置文件的时候，编辑的是 storage.conf 而已
     - 复制一份配置文件：`cp /etc/fdfs/storage.conf.sample /etc/fdfs/storage.conf`
     - 编辑：`vim /etc/fdfs/storage.conf`，编辑内容看下面中文注释
+    
     ``` ini
     disabled=false
     group_name=group1
@@ -194,6 +204,7 @@
     - 利用自带的 client 进行测试
     - 复制一份配置文件：`cp /etc/fdfs/client.conf.sample /etc/fdfs/client.conf`
     - 编辑：`vim /etc/fdfs/client.conf`，编辑内容看下面中文注释
+    
     ``` ini
     connect_timeout=30
     network_timeout=60
@@ -218,6 +229,7 @@
     - 解压 Nginx 模块：`tar zxvf fastdfs-nginx-module_v1.16.tar.gz`，得到目录地址：**/opt/setups/FastDFS/fastdfs-nginx-module**
     - 编辑 Nginx 模块的配置文件：`vim /opt/setups/FastDFS/fastdfs-nginx-module/src/config`
     - 找到下面一行包含有 `local` 字眼去掉，因为这三个路径根本不是在 local 目录下的。
+    
     ``` nginx
     CORE_INCS="$CORE_INCS /usr/local/include/fastdfs /usr/local/include/fastcommon/"
     ```
@@ -225,8 +237,8 @@
     ``` nginx
     CORE_INCS="$CORE_INCS /usr/include/fastdfs /usr/include/fastcommon/"
     ```
-    - 复制文件：`cp /opt/setups/FastDFS/FastDFS/conf/http.conf /etc/fdfs`
-    - 复制文件：`cp /opt/setups/FastDFS/FastDFS/conf/mime.types /etc/fdfs`
+    - 复制文件：`cp /opt/setups/FastDFS/fastdfs-5.10/conf/http.conf /etc/fdfs/`
+    - 复制文件：`cp /opt/setups/FastDFS/fastdfs-5.10/conf/mime.types /etc/fdfs/`
 - 安装 Nginx 和 Nginx 第三方模块
     - 安装 Nginx 依赖包：`yum install -y gcc gcc-c++ pcre pcre-devel zlib zlib-devel openssl openssl-devel`
     - 预设几个文件夹，方便等下安装的时候有些文件可以进行存放：
@@ -234,6 +246,7 @@
     - 解压 Nginx：`tar zxvf /opt/setups/nginx-1.8.1.tar.gz`
     - 进入解压后目录：`cd /opt/setups/nginx-1.8.1/`
     - 编译配置：（注意最后一行）
+    
     ``` ini
     ./configure \
     --prefix=/usr/local/nginx \
@@ -254,6 +267,7 @@
     - 复制 Nginx 模块的配置文件：`cp /opt/setups/FastDFS/fastdfs-nginx-module/src/mod_fastdfs.conf /etc/fdfs`
     - 编辑 Nginx 模块的配置文件：`vim /etc/fdfs/mod_fastdfs.conf`，编辑内容看下面中文注释
     - 如果在已经启动 Nginx 的情况下修改下面内容记得要重启 Nginx。
+    
     ``` ini
     connect_timeout=2
     network_timeout=30
@@ -286,7 +300,7 @@
     group_count = 0
     ```
 
-    - 编辑 Nginx 配置文件
+    - 编辑 Nginx 配置文件 `/usr/local/nginx/conf/nginx.conf`
     
     ``` nginx
     # 注意这一行行，我特别加上了使用 root 用户去执行，不然有些日记目录没有权限访问
