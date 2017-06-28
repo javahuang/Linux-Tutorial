@@ -338,7 +338,61 @@
         - 刷新 Nginx 配置后重启：`/usr/local/nginx/sbin/nginx -s reload`
         - 停止 Nginx：`/usr/local/nginx/sbin/nginx -s stop`
         - 如果访问不了，或是出现其他信息看下错误立即：`vim /var/log/nginx/error.log`
-
+- fastdht 上传文件去重
+    - 安装 Berkeley DB，去[官网](http://www.oracle.com/technetwork/database/database-technologies/berkeleydb/downloads/index.html)下载最新的包 db-6.2.32.tar.gz
+                        
+        ``` bash
+        tar -zxvf db-6.2.32.tar.gz
+        cd db-6.2.32/build_unix
+        ../dist/configure --prefix=/usr
+        # 编译安装
+        make & make install
+        # 设置软连接，否则启动 dht 会报分段错误
+        ln -s /usr/lib/libdb-6.2.so /lib64/libdb-6.2.so
+        ln -s /usr/lib/libdb-6.2.so /lib64/libdb.so
+        ```
+    - 安装 FastDHT
+        
+        ``` bash
+         git clone https://github.com/happyfish100/fastdht.git
+         # 进入目录执行
+         ./make.sh
+         ./make.sh install
+         # 安装完之后，会在 /etc/fdht 里面生成下面配置文件
+         [root@rp-linux fdht]# ls
+         fdht_client.conf  fdhtd.conf  fdht_servers.conf
+        ```
+    - 安装完之后开始配置
+        
+        ```
+        # fdht_client.conf
+        keep_alive=1
+        base_path=/opt/fastdfs/fastdht/data-and-log
+        #include /etc/fdhtd/fdht_servers.conf
+        
+        # fdht_servers.conf
+        group_count = 1
+        group0 = 10.211.55.13:11411
+        
+        # fdhtd.conf
+        base_path=/opt/fastdfs/fastdht/data-and-log
+        #include /etc/fdhtd/fdht_servers.conf
+        
+        # storaged.conf
+        check_file_duplicate=1
+        keep_alive=1
+        #include /etc/fdht/fdht_servers.conf
+        ```
+    - 启动 `fdhtd /etc/fdht/fdhtd.conf restart`
+    - 测试，上传一个文件，可以看到生成了三个文件，一个是源文件，一个是文件的元数据，还有一个是符号链接
+        
+        ```
+        [root@rp-linux 00]# ll
+        总用量 44
+        -rw-r--r--. 1 root root 35950 6月  28 15:43 CtM3DVlTXgeAb4hlAACMbvBKWF8023.png
+        lrwxrwxrwx. 1 root root    78 6月  28 15:43 CtM3DVlTXgeAYzuPAACMbg3jv-4846.png -> /opt/fastdfs/storage/images-data/data/00/00/CtM3DVlTXgeAb4hlAACMbvBKWF8023.png
+        -rw-r--r--. 1 root root    24 6月  28 15:43 CtM3DVlTXgeAYzuPAACMbg3jv-4846.png-m
+        ```
 
 ### 多机安装部署（CentOS 6.7 环境）
 
@@ -351,4 +405,7 @@ http://blog.csdn.net/ricciozhang/article/details/49402273
 
 - [fastdfs+nginx安装配置](http://blog.csdn.net/ricciozhang/article/details/49402273)
 
+- [[FastDFS] FastDHT启动报分段错(动态链接库正常)](http://bbs.chinaunix.net/thread-4073533-1-1.html) 
+
+- [CentOS FastDFS配置之常见错误](http://blog.rekfan.com/articles/442.html)
 
